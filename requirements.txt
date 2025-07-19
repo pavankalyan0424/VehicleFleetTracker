@@ -1,2 +1,4 @@
 cassandra-driver
-flask
+pydantic
+fastapi[all]==0.115.5
+uvicorn[standard]==0.32.1

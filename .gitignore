@@ -1,4 +1,5 @@
 # Ignore Venv
 .venv
+__pycache__
 
 .idea
