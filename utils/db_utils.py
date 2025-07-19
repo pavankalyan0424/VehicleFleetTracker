@@ -1,10 +1,9 @@
 """
 Module for DB related utilities
 """
-
+from cassandra.cluster import Cluster
 from datetime import datetime
 
-from cassandra.cluster import Cluster
 
 
 from utils.cassandra_config_constants import (
@@ -30,15 +29,15 @@ def get_cassandra_session():
 
     session.set_keyspace(KEYSPACE)
 
-    # Create table if it doesn't exist
+    # Create tables if it doesn't exist
     session.execute(
         f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
             fleet_id TEXT,
             latitude TEXT,
             longitude TEXT,
-            updated_at TIMESTAMP,
             speed TEXT,
+            updated_at TIMESTAMP,
             PRIMARY KEY (fleet_id, updated_at)
         ) WITH CLUSTERING ORDER BY (updated_at DESC)
     """
@@ -114,7 +113,6 @@ def get_latest_location(session, fleet_id: str):
     row = result.one()
     if row:
         return {
-            "fleet_id": row.fleet_id,
             "latitude": float(decrypt(row.latitude)),
             "longitude": float(decrypt(row.longitude)),
             "speed": float(decrypt(row.speed)),

@@ -3,7 +3,8 @@ Module for tracker related APIs
 """
 
 from fastapi import APIRouter, HTTPException, Response
-
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
 from app.models.tracker_models import FleetLocationUpdate, FleetLocationResponse
 from utils.db_utils import (
     get_cassandra_session,
@@ -13,8 +14,7 @@ from utils.db_utils import (
     get_all_latest_locations,
     fetch_recent_locations,
 )
-from fastapi import Request
-from fastapi.templating import Jinja2Templates
+
 
 router = APIRouter()
 session = get_cassandra_session()
@@ -32,7 +32,7 @@ def health() -> Response:
     return Response(status_code=204)
 
 
-@router.post("/update/{fleet_id}", response_model=None)
+@router.post("/locations/update/{fleet_id}", response_model=None)
 def update_fleet_location_by_fleet_id(fleet_id, data: FleetLocationUpdate):
     try:
         insert_location(session, fleet_id, data.latitude, data.longitude, data.speed)
@@ -43,7 +43,7 @@ def update_fleet_location_by_fleet_id(fleet_id, data: FleetLocationUpdate):
         )
 
 
-@router.get("/location/latest/all")
+@router.get("/locations/latest/all")
 def get_all_fleet_locations():
     try:
         return get_all_latest_locations(session)
@@ -54,7 +54,7 @@ def get_all_fleet_locations():
         )
 
 
-@router.get("/location/latest/{fleet_id}", response_model=FleetLocationResponse)
+@router.get("/locations/latest/{fleet_id}", response_model=FleetLocationResponse)
 def get_fleet_latest_location_by_fleet_id(fleet_id: str):
     try:
         location = get_latest_location(session, fleet_id)
@@ -70,7 +70,7 @@ def get_fleet_latest_location_by_fleet_id(fleet_id: str):
         )
 
 
-@router.get("/location/history/{fleet_id}")
+@router.get("/locations/history/{fleet_id}")
 def get_fleet_history_by_fleet_id(fleet_id: str):
     try:
         location = fetch_recent_locations(session, fleet_id)
@@ -86,7 +86,7 @@ def get_fleet_history_by_fleet_id(fleet_id: str):
         )
 
 
-@router.get("/location/speed/average/{fleet_id}")
+@router.get("/locations/speed/average/{fleet_id}")
 def get_average_speed_by_fleet_id(fleet_id: str):
     try:
         speeds = fetch_recent_speeds(session, fleet_id)
