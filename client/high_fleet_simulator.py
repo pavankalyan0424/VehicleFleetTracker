@@ -9,13 +9,15 @@ API_URL = "http://127.0.0.1:8000/update"
 # Simulate fleets
 BUS_IDS = [f"FLEET-{str(i).zfill(3)}" for i in range(1, 50)]
 
+
 def generate_random_location():
     # You can center this around a city (e.g., Hyderabad)
     base_lat, base_lon = 17.385044, 78.486671
     return (
         base_lat + random.uniform(-0.05, 0.05),
-        base_lon + random.uniform(-0.05, 0.05)
+        base_lon + random.uniform(-0.05, 0.05),
     )
+
 
 def simulate_fleet(fleet_id):
     while True:
@@ -28,7 +30,7 @@ def simulate_fleet(fleet_id):
             "latitude": latitude,
             "longitude": longitude,
             "speed": speed,
-            "updated_at": updated_at
+            "updated_at": updated_at,
         }
 
         try:
@@ -38,6 +40,7 @@ def simulate_fleet(fleet_id):
             print(f"[{fleet_id}] Error: {e}")
 
         time.sleep(random.uniform(1.5, 3.5))  # simulate real delay between updates
+
 
 def run_simulation():
     threads = []
