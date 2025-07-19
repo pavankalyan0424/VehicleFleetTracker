@@ -34,25 +34,60 @@ def get_cassandra_session():
         ) WITH CLUSTERING ORDER BY (updated_at DESC)
     """)
 
+    session.execute("""
+    CREATE TABLE IF NOT EXISTS fleet_location_latest (
+        fleet_id TEXT PRIMARY KEY,
+        latitude TEXT,
+        longitude TEXT,
+        speed TEXT,
+        updated_at TIMESTAMP
+    )
+    """)
+
     return session
 
 def insert_location(session,fleet_id:str, latitude:float,longitude:float, speed: float):
     encrypted_lat = encrypt(str(latitude))
     encrypted_lon = encrypt(str(longitude))
     encrypted_speed = encrypt(str(speed))
+    now = datetime.utcnow()
     session.execute(
         f"""
         INSERT INTO {TABLE_NAME} (fleet_id, updated_at, latitude, longitude, speed)
         VALUES (%s, %s, %s, %s, %s)
         """,
-        (fleet_id, datetime.utcnow(), encrypted_lat, encrypted_lon, encrypted_speed)
+        (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed)
     )
 
-def get_location(session,fleet_id:str):
+    # Insert/update latest location
+    session.execute(
+        """
+        INSERT INTO fleet_location_latest (fleet_id, updated_at, latitude, longitude, speed)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed)
+    )
+
+def get_all_latest_locations(session):
+    query = """
+            SELECT * FROM fleet_location_latest
+            """
+    rows = session.execute(query)
+    result = []
+    for row in rows:
+        result.append({
+            "fleet_id": row.fleet_id,
+            "latitude": float(decrypt(row.latitude)),
+            "longitude": float(decrypt(row.longitude)),
+            "speed": float(decrypt(row.speed)),
+            "updated_at": row.updated_at.isoformat()
+        })
+    return result
+
+def get_latest_location(session, fleet_id:str):
     query = f"""
-        SELECT * FROM {TABLE_NAME}
+        SELECT * FROM fleet_location_latest
         WHERE fleet_id = %s
-        LIMIT 1
         """
     result = session.execute(query, (fleet_id,))
     row = result.one()
@@ -66,7 +101,9 @@ def get_location(session,fleet_id:str):
         }
     return None
 
-def fetch_recent_locations(session,fleet_id:str,limit:int=10):
+
+
+def fetch_recent_location(session,fleet_id:str,limit:int=10):
     result = session.execute(
         f"""
         SELECT * FROM {TABLE_NAME}
@@ -80,7 +117,7 @@ def fetch_recent_locations(session,fleet_id:str,limit:int=10):
 def fetch_recent_speeds(session, fleet_id:str,limit:int=10):
     rows = session.execute(f"""
                 SELECT speed FROM fleet_location 
-                WHERE fleet_id = %s LIMIT 100
-            """, (fleet_id,))
+                WHERE fleet_id = %s LIMIT %s
+            """, (fleet_id,limit))
 
     return [float(decrypt(row.speed)) for row in rows if row.speed]
