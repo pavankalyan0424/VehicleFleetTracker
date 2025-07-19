@@ -76,3 +76,11 @@ def fetch_recent_locations(session,fleet_id:str,limit:int=10):
         (fleet_id, limit)
     )
     return list(result)
+
+def fetch_recent_speeds(session, fleet_id:str,limit:int=10):
+    rows = session.execute(f"""
+                SELECT speed FROM fleet_location 
+                WHERE fleet_id = %s LIMIT 100
+            """, (fleet_id,))
+
+    return [float(decrypt(row.speed)) for row in rows if row.speed]
