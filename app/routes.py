@@ -13,10 +13,10 @@ session = get_cassandra_session()
 def health() -> Response:
     return Response(status_code=204)
 
-@router.post("/update",response_model=None)
-def update_fleet_location(data: FleetLocationUpdate):
+@router.post("/update/{fleet_id}",response_model=None)
+def update_fleet_location(fleet_id,data: FleetLocationUpdate):
     try:
-        insert_location(session,data.fleet_id,data.latitude,data.longitude,data.speed)
+        insert_location(session,fleet_id,data.latitude,data.longitude,data.speed)
         return {"status":"success", "message":"Location updated"}
     except Exception as exception:
         raise HTTPException(status_code=500,detail=f"Updating location failed with Error {exception}")

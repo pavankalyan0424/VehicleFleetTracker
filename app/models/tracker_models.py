@@ -5,12 +5,12 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 class FleetLocationUpdate(BaseModel):
-    fleet_id: str
     latitude: float
     longitude: float
-    speed: int
+    speed: float
 
 class FleetLocationResponse(BaseModel):
     latitude: float
     longitude: float
     updated_at: datetime
+    speed: float
