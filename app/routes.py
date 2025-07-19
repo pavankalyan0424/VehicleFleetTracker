@@ -6,11 +6,17 @@ from fastapi import APIRouter, HTTPException, Response
 
 from app.models.tracker_models import FleetLocationUpdate, FleetLocationResponse
 from utils.db_utils import get_cassandra_session, get_latest_location, insert_location, fetch_recent_speeds, \
-    get_all_latest_locations
-
+    get_all_latest_locations, fetch_recent_locations
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
 router = APIRouter()
 session = get_cassandra_session()
 
+templates = Jinja2Templates(directory="../templates")
+
+@router.get("/dashboard")
+def dashboard_view(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @router.get("/health")
 def health() -> Response:
@@ -44,6 +50,15 @@ def get_fleet_latest_location_by_fleet_id(fleet_id: str):
     except Exception as exception:
         raise HTTPException(status_code=500, detail=f"Fetching latest location failed with Error {exception}")
 
+@router.get("/location/history/{fleet_id}")
+def get_fleet_history_by_fleet_id(fleet_id: str):
+    try:
+        location = fetch_recent_locations(session, fleet_id)
+        if location:
+            return location
+        raise HTTPException(status_code=404, detail=f"Fleet with ID {fleet_id} not found")
+    except Exception as exception:
+        raise HTTPException(status_code=500, detail=f"Fetching latest location failed with Error {exception}")
 
 @router.get("/location/speed/average/{fleet_id}")
 def get_average_speed_by_fleet_id(fleet_id: str):

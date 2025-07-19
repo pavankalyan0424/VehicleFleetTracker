@@ -74,6 +74,7 @@ def get_all_latest_locations(session):
             """
     rows = session.execute(query)
     result = []
+
     for row in rows:
         result.append({
             "fleet_id": row.fleet_id,
@@ -82,6 +83,7 @@ def get_all_latest_locations(session):
             "speed": float(decrypt(row.speed)),
             "updated_at": row.updated_at.isoformat()
         })
+    result.sort(key=lambda x: x["fleet_id"])
     return result
 
 def get_latest_location(session, fleet_id:str):
@@ -103,8 +105,8 @@ def get_latest_location(session, fleet_id:str):
 
 
 
-def fetch_recent_location(session,fleet_id:str,limit:int=10):
-    result = session.execute(
+def fetch_recent_locations(session, fleet_id:str, limit:int=10):
+    rows = session.execute(
         f"""
         SELECT * FROM {TABLE_NAME}
         WHERE fleet_id = %s
@@ -112,7 +114,13 @@ def fetch_recent_location(session,fleet_id:str,limit:int=10):
         """,
         (fleet_id, limit)
     )
-    return list(result)
+    result = []
+    for row in rows:
+        result.append({
+            "latitude": float(decrypt(row.latitude)),
+            "longitude": float(decrypt(row.longitude)),
+        })
+    return result
 
 def fetch_recent_speeds(session, fleet_id:str,limit:int=10):
     rows = session.execute(f"""
