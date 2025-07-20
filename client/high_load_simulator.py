@@ -10,7 +10,7 @@ import requests
 API_URL = "http://127.0.0.1:8000/locations/update"
 
 # Simulate fleets
-FLEET_IDS = [f"FLEET-{str(i).zfill(3)}" for i in range(1, 50)]
+FLEET_IDS = [f"FLEET-{str(i).zfill(3)}" for i in range(1, 501)]
 
 
 def generate_random_location():

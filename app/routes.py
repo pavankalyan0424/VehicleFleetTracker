@@ -12,17 +12,11 @@ from app.models.tracker_models import (
     FleetLocationSnapshotResponse,
     FleetCoordinatesResponse,
 )
-from utils.db_utils import (
-    get_cassandra_session,
-    get_latest_location,
-    insert_location,
-    fetch_recent_speeds,
-    get_all_latest_locations,
-    fetch_recent_locations,
-)
+from utils.db_utils import DBUtils
 
+db_utils = DBUtils()
+db_utils.init_session()
 router = APIRouter()
-session = get_cassandra_session()
 templates = Jinja2Templates(directory="templates")
 
 
@@ -42,7 +36,7 @@ def update_fleet_location_by_fleet_id(
     data: FleetLocationUpdateRequest,
 ):
     try:
-        insert_location(session, fleet_id, data.latitude, data.longitude, data.speed)
+        db_utils.insert_location(fleet_id, data.latitude, data.longitude, data.speed)
         return {"status": "success", "message": "Location updated"}
     except Exception as exception:
         raise HTTPException(
@@ -53,7 +47,7 @@ def update_fleet_location_by_fleet_id(
 @router.get("/locations/latest/all", response_model=List[FleetLocationSnapshotResponse])
 def get_all_fleet_locations():
     try:
-        return get_all_latest_locations(session)
+        return db_utils.get_all_latest_locations()
     except Exception as exception:
         raise HTTPException(
             status_code=500,
@@ -66,7 +60,7 @@ def get_fleet_latest_location_by_fleet_id(
     fleet_id: str,
 ):
     try:
-        location = get_latest_location(session, fleet_id)
+        location = db_utils.get_latest_location( fleet_id)
         if location:
             return location
         raise HTTPException(
@@ -86,7 +80,7 @@ def get_fleet_history_by_fleet_id(
     fleet_id: str,
 ):
     try:
-        location = fetch_recent_locations(session, fleet_id)
+        location = db_utils.fetch_recent_locations( fleet_id)
         if location:
             return location
         raise HTTPException(
@@ -104,7 +98,7 @@ def get_average_speed_by_fleet_id(
     fleet_id: str,
 ):
     try:
-        speeds = fetch_recent_speeds(session, fleet_id)
+        speeds = db_utils.fetch_recent_speeds( fleet_id)
         if not speeds:
             raise HTTPException(status_code=404, detail="No data found")
 

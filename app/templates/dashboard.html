@@ -269,6 +269,7 @@
       }
 
       async function showFleetModal(fleet_id) {
+        const scrollY = window.scrollY;
         document.getElementById(
           "fleetModalLabel"
         ).innerText = `Fleet ID: ${fleet_id}`;
@@ -359,6 +360,8 @@
           document.getElementById("fleetModal")
         );
         modal.show();
+
+        setTimeout(() => window.scrollTo(0, scrollY), 50);
 
         if (modalRefreshInterval) clearInterval(modalRefreshInterval);
         modalRefreshInterval = setInterval(updateModalContent, refreshInterval);

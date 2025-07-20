@@ -26,7 +26,7 @@ def simulate_fleet(fleet_id):
 
 
 # Launch multiple fleets concurrently
-def run_simulation(fleet_count=1):
+def run_simulation(fleet_count=10):
     with ThreadPoolExecutor(max_workers=fleet_count) as executor:
         fleet_ids = [f"FLEET-{i:03}" for i in range(1, fleet_count + 1)]
         executor.map(simulate_fleet, fleet_ids)
