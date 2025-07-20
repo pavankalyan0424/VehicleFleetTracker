@@ -23,7 +23,6 @@ from utils.db_utils import (
 
 router = APIRouter()
 session = get_cassandra_session()
-
 templates = Jinja2Templates(directory="templates")
 
 

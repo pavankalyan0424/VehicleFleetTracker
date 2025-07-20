@@ -3,8 +3,7 @@ Module for DB related utilities
 """
 
 from cassandra.cluster import Cluster
-from datetime import datetime
-
+from datetime import datetime, UTC
 
 from utils.cassandra_config_constants import (
     CASSANDRA_HOSTS,
@@ -60,12 +59,16 @@ def get_cassandra_session():
 
 
 def insert_location(
-    session, fleet_id: str, latitude: float, longitude: float, speed: float
+    session,
+    fleet_id: str,
+    latitude: float,
+    longitude: float,
+    speed: float,
 ):
     encrypted_lat = encrypt(str(latitude))
     encrypted_lon = encrypt(str(longitude))
     encrypted_speed = encrypt(str(speed))
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     session.execute(
         f"""
         INSERT INTO {FLEET_LOCATION_TABLE} (fleet_id, updated_at, latitude, longitude, speed)
@@ -122,7 +125,11 @@ def get_latest_location(session, fleet_id: str):
     return None
 
 
-def fetch_recent_locations(session, fleet_id: str, limit: int = 10):
+def fetch_recent_locations(
+    session,
+    fleet_id: str,
+    limit: int = 10,
+):
     rows = session.execute(
         f"""
         SELECT * FROM {FLEET_LOCATION_TABLE}
