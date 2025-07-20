@@ -1,3 +1,7 @@
+"""
+Module for Crypto Utilies
+"""
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import os
 import base64
@@ -20,5 +24,3 @@ def decrypt(value: str) -> str:
     nonce = decoded[:12]
     ciphertext = decoded[12:]
     return aesgcm.decrypt(nonce, ciphertext, None).decode()
-
-print(decrypt('+kHnrBhJJPiqbfiJM0gGKlz/gJ1wivzrD0Xaktqrd9/RK/E='))

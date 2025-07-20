@@ -1,16 +1,17 @@
 """
 Module for DB related utilities
 """
+
 from cassandra.cluster import Cluster
 from datetime import datetime
-
 
 
 from utils.cassandra_config_constants import (
     CASSANDRA_HOSTS,
     CASSANDRA_PORT,
     KEYSPACE,
-    TABLE_NAME,
+    FLEET_LOCATION_TABLE,
+    FLEET_LATEST_LOCATION_TABLE,
 )
 from utils.crypto_utils import decrypt, encrypt
 
@@ -22,9 +23,9 @@ def get_cassandra_session():
     # Create keyspace if it doesn't exist
     session.execute(
         f"""
-        CREATE KEYSPACE IF NOT EXISTS {KEYSPACE}
-        WITH replication = {{ 'class': 'SimpleStrategy', 'replication_factor': '1' }}
-    """
+            CREATE KEYSPACE IF NOT EXISTS {KEYSPACE}
+            WITH replication = {{ 'class': 'SimpleStrategy', 'replication_factor': '1' }}
+        """
     )
 
     session.set_keyspace(KEYSPACE)
@@ -32,27 +33,27 @@ def get_cassandra_session():
     # Create tables if it doesn't exist
     session.execute(
         f"""
-        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            fleet_id TEXT,
-            latitude TEXT,
-            longitude TEXT,
-            speed TEXT,
-            updated_at TIMESTAMP,
-            PRIMARY KEY (fleet_id, updated_at)
-        ) WITH CLUSTERING ORDER BY (updated_at DESC)
-    """
+            CREATE TABLE IF NOT EXISTS {FLEET_LOCATION_TABLE} (
+                fleet_id TEXT,
+                latitude TEXT,
+                longitude TEXT,
+                speed TEXT,
+                updated_at TIMESTAMP,
+                PRIMARY KEY (fleet_id, updated_at)
+            ) WITH CLUSTERING ORDER BY (updated_at DESC)
+        """
     )
 
     session.execute(
+        f"""
+            CREATE TABLE IF NOT EXISTS {FLEET_LATEST_LOCATION_TABLE} (
+                fleet_id TEXT PRIMARY KEY,
+                latitude TEXT,
+                longitude TEXT,
+                speed TEXT,
+                updated_at TIMESTAMP
+            )
         """
-    CREATE TABLE IF NOT EXISTS fleet_location_latest (
-        fleet_id TEXT PRIMARY KEY,
-        latitude TEXT,
-        longitude TEXT,
-        speed TEXT,
-        updated_at TIMESTAMP
-    )
-    """
     )
 
     return session
@@ -67,7 +68,7 @@ def insert_location(
     now = datetime.utcnow()
     session.execute(
         f"""
-        INSERT INTO {TABLE_NAME} (fleet_id, updated_at, latitude, longitude, speed)
+        INSERT INTO {FLEET_LOCATION_TABLE} (fleet_id, updated_at, latitude, longitude, speed)
         VALUES (%s, %s, %s, %s, %s)
         """,
         (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
@@ -75,8 +76,8 @@ def insert_location(
 
     # Insert/update latest location
     session.execute(
-        """
-        INSERT INTO fleet_location_latest (fleet_id, updated_at, latitude, longitude, speed)
+        f"""
+        INSERT INTO {FLEET_LATEST_LOCATION_TABLE} (fleet_id, updated_at, latitude, longitude, speed)
         VALUES (%s, %s, %s, %s, %s)
         """,
         (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
@@ -84,8 +85,8 @@ def insert_location(
 
 
 def get_all_latest_locations(session):
-    query = """
-            SELECT * FROM fleet_location_latest
+    query = f"""
+            SELECT * FROM {FLEET_LATEST_LOCATION_TABLE}
             """
     rows = session.execute(query)
     result = []
@@ -106,7 +107,7 @@ def get_all_latest_locations(session):
 
 def get_latest_location(session, fleet_id: str):
     query = f"""
-        SELECT * FROM fleet_location_latest
+        SELECT * FROM {FLEET_LATEST_LOCATION_TABLE}
         WHERE fleet_id = %s
         """
     result = session.execute(query, (fleet_id,))
@@ -124,7 +125,7 @@ def get_latest_location(session, fleet_id: str):
 def fetch_recent_locations(session, fleet_id: str, limit: int = 10):
     rows = session.execute(
         f"""
-        SELECT * FROM {TABLE_NAME}
+        SELECT * FROM {FLEET_LOCATION_TABLE}
         WHERE fleet_id = %s
         LIMIT %s
         """,
@@ -144,7 +145,7 @@ def fetch_recent_locations(session, fleet_id: str, limit: int = 10):
 def fetch_recent_speeds(session, fleet_id: str, limit: int = 10):
     rows = session.execute(
         f"""
-                SELECT speed FROM fleet_location 
+                SELECT speed FROM {FLEET_LOCATION_TABLE}
                 WHERE fleet_id = %s LIMIT %s
             """,
         (fleet_id, limit),

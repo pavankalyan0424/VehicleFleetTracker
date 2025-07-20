@@ -1,8 +1,11 @@
-import requests
+"""
+Module for simulating high load
+"""
+
 import random
-import time
 import threading
-from datetime import datetime
+import time
+import requests
 
 API_URL = "http://127.0.0.1:8000/locations/update"
 
@@ -47,7 +50,6 @@ def run_simulation():
         t.start()
         threads.append(t)
 
-    # Let it run for 30 seconds
     time.sleep(300)
 
 

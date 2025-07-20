@@ -1,3 +1,7 @@
+"""
+Module for generating low load
+"""
+
 import time
 import random
 import requests

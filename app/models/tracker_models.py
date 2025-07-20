@@ -2,18 +2,27 @@
 Module for Tracker related models
 """
 
-from pydantic import BaseModel, Field
 from datetime import datetime
+from pydantic import BaseModel
 
 
-class FleetLocationUpdate(BaseModel):
+class FleetLocationUpdateRequest(BaseModel):
     latitude: float
     longitude: float
     speed: float
 
 
-class FleetLocationResponse(BaseModel):
+class FleetLocationDetailResponse(BaseModel):
     latitude: float
     longitude: float
     updated_at: datetime
     speed: float
+
+
+class FleetLocationSnapshotResponse(FleetLocationDetailResponse):
+    fleet_id: str
+
+
+class FleetCoordinatesResponse(BaseModel):
+    latitude: float
+    longitude: float
