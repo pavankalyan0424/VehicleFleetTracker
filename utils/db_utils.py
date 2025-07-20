@@ -9,8 +9,8 @@ from utils.cassandra_config_constants import (
     CASSANDRA_HOSTS,
     CASSANDRA_PORT,
     KEYSPACE,
-    FLEET_LOCATION_TABLE,
-    FLEET_LATEST_LOCATION_TABLE,
+    VEHICLE_LOCATION_TABLE,
+    VEHICLE_LATEST_LOCATION_TABLE,
 )
 from utils.crypto_utils import decrypt, encrypt
 
@@ -35,21 +35,21 @@ class DBUtils:
         # Create tables if it doesn't exist
         session.execute(
             f"""
-                    CREATE TABLE IF NOT EXISTS {FLEET_LOCATION_TABLE} (
-                        fleet_id TEXT,
+                    CREATE TABLE IF NOT EXISTS {VEHICLE_LOCATION_TABLE} (
+                        vehicle_id TEXT,
                         latitude TEXT,
                         longitude TEXT,
                         speed TEXT,
                         updated_at TIMESTAMP,
-                        PRIMARY KEY (fleet_id, updated_at)
+                        PRIMARY KEY (vehicle_id, updated_at)
                     ) WITH CLUSTERING ORDER BY (updated_at DESC)
                 """
         )
 
         session.execute(
             f"""
-                    CREATE TABLE IF NOT EXISTS {FLEET_LATEST_LOCATION_TABLE} (
-                        fleet_id TEXT PRIMARY KEY,
+                    CREATE TABLE IF NOT EXISTS {VEHICLE_LATEST_LOCATION_TABLE} (
+                        vehicle_id TEXT PRIMARY KEY,
                         latitude TEXT,
                         longitude TEXT,
                         speed TEXT,
@@ -61,7 +61,7 @@ class DBUtils:
 
     def insert_location(
         self,
-        fleet_id: str,
+        vehicle_id: str,
         latitude: float,
         longitude: float,
         speed: float,
@@ -72,24 +72,24 @@ class DBUtils:
         now = datetime.now(UTC)
         self.session.execute(
             f"""
-            INSERT INTO {FLEET_LOCATION_TABLE} (fleet_id, updated_at, latitude, longitude, speed)
+            INSERT INTO {VEHICLE_LOCATION_TABLE} (vehicle_id, updated_at, latitude, longitude, speed)
             VALUES (%s, %s, %s, %s, %s)
             """,
-            (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
+            (vehicle_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
         )
 
         # Insert/update latest location
         self.session.execute(
             f"""
-            INSERT INTO {FLEET_LATEST_LOCATION_TABLE} (fleet_id, updated_at, latitude, longitude, speed)
+            INSERT INTO {VEHICLE_LATEST_LOCATION_TABLE} (vehicle_id, updated_at, latitude, longitude, speed)
             VALUES (%s, %s, %s, %s, %s)
             """,
-            (fleet_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
+            (vehicle_id, now, encrypted_lat, encrypted_lon, encrypted_speed),
         )
 
     def get_all_latest_locations(self):
         query = f"""
-                SELECT * FROM {FLEET_LATEST_LOCATION_TABLE}
+                SELECT * FROM {VEHICLE_LATEST_LOCATION_TABLE}
                 """
         rows = self.session.execute(query)
         result = []
@@ -97,22 +97,22 @@ class DBUtils:
         for row in rows:
             result.append(
                 {
-                    "fleet_id": row.fleet_id,
+                    "vehicle_id": row.vehicle_id,
                     "latitude": float(decrypt(row.latitude)),
                     "longitude": float(decrypt(row.longitude)),
                     "speed": float(decrypt(row.speed)),
                     "updated_at": row.updated_at.isoformat(),
                 }
             )
-        result.sort(key=lambda x: x["fleet_id"])
+        result.sort(key=lambda x: x["vehicle_id"])
         return result
 
-    def get_latest_location(self, fleet_id: str):
+    def get_latest_location(self, vehicle_id: str):
         query = f"""
-            SELECT * FROM {FLEET_LATEST_LOCATION_TABLE}
-            WHERE fleet_id = %s
+            SELECT * FROM {VEHICLE_LATEST_LOCATION_TABLE}
+            WHERE vehicle_id = %s
             """
-        result = self.session.execute(query, (fleet_id,))
+        result = self.session.execute(query, (vehicle_id,))
         row = result.one()
         if row:
             return {
@@ -125,16 +125,16 @@ class DBUtils:
 
     def fetch_recent_locations(
         self,
-        fleet_id: str,
+        vehicle_id: str,
         limit: int = 10,
     ):
         rows = self.session.execute(
             f"""
-            SELECT * FROM {FLEET_LOCATION_TABLE}
-            WHERE fleet_id = %s
+            SELECT * FROM {VEHICLE_LOCATION_TABLE}
+            WHERE vehicle_id = %s
             LIMIT %s
             """,
-            (fleet_id, limit),
+            (vehicle_id, limit),
         )
         result = []
         for row in rows:
@@ -146,12 +146,12 @@ class DBUtils:
             )
         return result
 
-    def fetch_recent_speeds(self, fleet_id: str, limit: int = 10):
+    def fetch_recent_speeds(self, vehicle_id: str, limit: int = 10):
         rows = self.session.execute(
             f"""
-                    SELECT speed FROM {FLEET_LOCATION_TABLE}
-                    WHERE fleet_id = %s LIMIT %s
+                    SELECT speed FROM {VEHICLE_LOCATION_TABLE}
+                    WHERE vehicle_id = %s LIMIT %s
                 """,
-            (fleet_id, limit),
+            (vehicle_id, limit),
         )
         return [float(decrypt(row.speed)) for row in rows if row.speed]

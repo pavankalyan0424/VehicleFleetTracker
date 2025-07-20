@@ -2,12 +2,12 @@
 
 A real-time, distributed and secure vehicle fleet tracking system leveraging Apache Cassandra and FastAPI 
 
-> This project simulated tracking multiple fleets/vehicles, efficiently stores and retrieves their location and speed data and demonstrated concurrent data ingestion and querying in a distributed environment - with encrypted storage in Cassandra.
+> This project simulates tracking multiple vehicles, efficiently stores and retrieves their location and speed data and demonstrates concurrent data ingestion and querying in a distributed environment - with encrypted storage in Cassandra.
 
 
 ## 🧩 Features
 
-* Real-time tracking of multiple fleets
+* Real-time tracking of multiple vehicles
 * Secure storage and retrieval of location data using AES-GCM Encryption
 * Calculate average speeds and view recent movement history
 * Showcase distributed database usage (Cassandra)
@@ -23,7 +23,7 @@ Layer| Technology | Description
 Backend | FastAPI (Python) | High performance async REST API
 Database | Apache Cassandra (NoSQL) | Distributed, Scalable, NoSQL
 Frontend | HTML + Bootstrap 5 + Javascript | Responsive UI with Fetch API Integration
-Data Model | fleet_id, timestamp, latitude, longitude, speed | Data per update
+Data Model | vehicle_id, timestamp, latitude, longitude, speed | Data per update
 
 ## 📁 Project Structure
 
@@ -75,10 +75,10 @@ uvicorn app.main:app --reload
 > Visit http://localhost:8000/docs
 Method| Endpoint | Description
 --- | --- | --- 
-GET | /locations/latest/all | Get latest location of all fleets
-GET | /locations/latest/{fleet_id} | Get latest location for a fleet
-GET | /locations/history/{fleet_id} | Get last 10 locations for a fleet
-POST | /locations/update/{fleet_id} | Update new location for a fleet
+GET | /locations/latest/all | Get latest location of all vehicles
+GET | /locations/latest/{vehicle_id} | Get latest location for a vehicle
+GET | /locations/history/{vehicle_id} | Get last 10 locations for a vehicle
+POST | /locations/update/{vehicle_id} | Update new location for a vehicle
 
 ## 🙌 Acknowledgements
 

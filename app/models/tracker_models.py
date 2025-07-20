@@ -6,23 +6,23 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class FleetLocationUpdateRequest(BaseModel):
+class VehicleLocationUpdateRequest(BaseModel):
     latitude: float
     longitude: float
     speed: float
 
 
-class FleetLocationDetailResponse(BaseModel):
+class VehicleLocationDetailResponse(BaseModel):
     latitude: float
     longitude: float
     updated_at: datetime
     speed: float
 
 
-class FleetLocationSnapshotResponse(FleetLocationDetailResponse):
-    fleet_id: str
+class VehicleLocationSnapshotResponse(VehicleLocationDetailResponse):
+    vehicle_id: str
 
 
-class FleetCoordinatesResponse(BaseModel):
+class VehicleCoordinatesResponse(BaseModel):
     latitude: float
     longitude: float
