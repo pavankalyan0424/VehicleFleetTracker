@@ -73,7 +73,8 @@ uvicorn app.main:app --reload
 ## API Endpoints
 
 > Visit http://localhost:8000/docs
-Method| Endpoint | Description
+
+Method | Endpoint | Description
 --- | --- | --- 
 GET | /locations/latest/all | Get latest location of all vehicles
 GET | /locations/latest/{vehicle_id} | Get latest location for a vehicle
