@@ -2,6 +2,7 @@
 Module for tracker related APIs
 """
 
+import os
 from typing import List
 from fastapi import APIRouter, HTTPException, Response, Request
 from fastapi.templating import Jinja2Templates
@@ -14,10 +15,12 @@ from app.models.tracker_models import (
 )
 from utils.db_utils import DBUtils
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 db_utils = DBUtils()
 db_utils.init_session()
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 
 @router.get("/health")
@@ -44,7 +47,9 @@ def update_vehicle_location_by_vehicle_id(
         )
 
 
-@router.get("/locations/latest/all", response_model=List[VehicleLocationSnapshotResponse])
+@router.get(
+    "/locations/latest/all", response_model=List[VehicleLocationSnapshotResponse]
+)
 def get_all_vehicle_locations():
     try:
         return db_utils.get_all_latest_locations()

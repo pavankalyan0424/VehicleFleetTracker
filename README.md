@@ -18,12 +18,12 @@ A real-time, distributed and secure vehicle fleet tracking system leveraging Apa
 ### Visit http://localhost:8000/dashboard for live dashboard 
 
 ## 🧱 Tech Stack
-Layer| Technology | Description
---- | --- | --- 
-Backend | FastAPI (Python) | High performance async REST API
-Database | Apache Cassandra (NoSQL) | Distributed, Scalable, NoSQL
-Frontend | HTML + Bootstrap 5 + Javascript | Responsive UI with Fetch API Integration
-Data Model | vehicle_id, timestamp, latitude, longitude, speed | Data per update
+| Layer      | Technology                                        | Description                              |
+|------------|---------------------------------------------------|------------------------------------------|
+| Backend    | FastAPI (Python)                                  | High performance async REST API          |
+| Database   | Apache Cassandra (NoSQL)                          | Distributed, Scalable, NoSQL             |
+| Frontend   | HTML + Bootstrap 5 + Javascript                   | Responsive UI with Fetch API Integration |
+| Data Model | vehicle_id, timestamp, latitude, longitude, speed | Data per update                          |
 
 ## 📁 Project Structure
 
@@ -74,12 +74,15 @@ uvicorn app.main:app --reload
 
 > Visit http://localhost:8000/docs
 
-Method | Endpoint | Description
---- | --- | --- 
-GET | /locations/latest/all | Get latest location of all vehicles
-GET | /locations/latest/{vehicle_id} | Get latest location for a vehicle
-GET | /locations/history/{vehicle_id} | Get last 10 locations for a vehicle
-POST | /locations/update/{vehicle_id} | Update new location for a vehicle
+| Method | Endpoint                              | Description                         |
+|--------|---------------------------------------|-------------------------------------|
+| GET    | /health                               | Get health of application           |
+| GET    | /dashboard                            | Get dashboard                       |
+| GET    | /locations/latest/all                 | Get latest location of all vehicles |
+| GET    | /locations/latest/{vehicle_id}        | Get latest location for a vehicle   |
+| GET    | /locations/history/{vehicle_id}       | Get last 10 locations for a vehicle |
+| GET    | /locations/speed/average/{vehicle_id} | Get average speed of vehicle        |
+| POST   | /locations/update/{vehicle_id}        | Update new location for a vehicle   |
 
 ## 🙌 Acknowledgements
 
